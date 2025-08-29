@@ -1,104 +1,313 @@
-<!DOCTYPE html>
+<!DOCTYPE ahtml>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de Prazos - Timeline de Cargas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #4a5568;
+        :root {
+            --bg-color: #2c3e50; /* Cinza escuro principal */
+            --container-bg: #34495e; /* Cinza escuro para cards */
+            --main-text: #ecf0f1; /* Texto claro */
+            --text-secondary: #bdc3c7; /* Texto cinza claro para labels */
+            --accent-green: #2ecc71; /* Verde destaque */
+            --accent-red: #e74c3c; /* Vermelho para botões de reset/desabilitar */
+            --border-color: #4a627a; /* Borda sutil para inputs */
+            --input-bg: #445b73; /* Fundo mais escuro para inputs */
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-color);
+            color: var(--main-text);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 2.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 1.5rem;
         }
-        .header h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 300; }
-        .main-content { display: grid; grid-template-columns: 1fr 400px; gap: 30px; margin-bottom: 40px; }
-        .steps-container { display: flex; flex-direction: column; gap: 20px; }
+
+        .header h1 {
+            font-weight: 700;
+            color: var(--main-text);
+            font-size: 2.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header h1 i {
+            color: var(--accent-green);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
         .step-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid rgba(226,232,240,0.8);
-            transition: all 0.3s ease;
+            background: var(--container-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
             position: relative;
         }
+        
+        .step-card strong {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--main-text);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .step-card label {
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .step-card input, .step-card select {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--input-bg);
+            font-family: inherit;
+            font-size: 1rem;
+            color: var(--main-text);
+            box-sizing: border-box; /* Garante que padding e borda não expandam o elemento */
+        }
+        
+        /* Ajuste para inputs do tipo 'date' */
+        .step-card input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1); /* Inverte a cor do ícone do calendário para branco */
+            margin-right: 0.5rem; /* Adiciona um espaçamento à direita do ícone */
+        }
+
+        .step-card input:focus, .step-card select:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .step-card .calculated-date,
+        .step-card .calculated-days {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            min-height: 38px; /* Para alinhar com inputs */
+            display: flex;
+            align-items: center;
+            color: var(--main-text);
+        }
+
         .disable-btn {
-            position: absolute; top: 15px; right: 15px;
-            background: #e2e8f0; border: none;
-            border-radius: 50%; width: 32px; height: 32px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: background 0.3s;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .disable-btn.active { background: #f87171; color: #fff; }
-        .step-header { display: flex; align-items: center; margin-bottom: 20px; gap: 15px; }
-        .step-number { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #81c7d4, #5dade2); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .step-title { font-size: 1.3rem; font-weight: 500; }
-        .step-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: end; }
-        .input-group { display: flex; flex-direction: column; gap: 8px; }
-        .input-group label { font-size: 0.9rem; font-weight: 500; }
-        .date-input, .period-select {
-            padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 10px;
-            font-size: 1rem; background: rgba(255,255,255,0.9);
+        
+        .disable-btn:hover {
+            color: var(--main-text);
         }
-        .calculated-date {
-            padding: 12px 16px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
-            border: 2px solid #bae6fd; border-radius: 10px; text-align: center;
+
+        .disable-btn.active {
+            background: var(--accent-red);
+            color: white;
+            border-radius: 50%;
         }
+
         .summary-panel {
-            background: rgba(255,255,255,0.95); border-radius: 16px; padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); height: fit-content;
+            background: var(--container-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--main-text);
+            position: sticky;
+            top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
-        .total-days { background: linear-gradient(135deg, #ddd6fe, #c4b5fd); padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; }
-        .total-days-number { font-size: 2.5rem; font-weight: bold; color: #5b21b6; display: block; }
-        .timeline-container {
-            background: rgba(255,255,255,0.95); border-radius: 16px; padding: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 20px;
+
+        .hawb-input label {
+            color: var(--text-secondary);
         }
-        .timeline { display: flex; flex-direction: column; gap: 20px; position: relative; padding-left: 30px; }
-        .timeline::before {
-            content: ""; position: absolute; left: 10px; top: 0; bottom: 0;
-            width: 4px; background: linear-gradient(to bottom, #81c7d4, #5dade2);
-            border-radius: 2px;
+
+        .hawb-input input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--main-text);
         }
-        .timeline-item {
-            display: flex; flex-direction: column; gap: 5px;
-            background: rgba(248,250,252,0.8); padding: 15px;
-            border-radius: 12px; position: relative;
+
+        .hawb-input input:focus {
+            outline: none;
+            border-color: var(--accent-green);
         }
-        .timeline-item::before {
-            content: ""; position: absolute; left: -22px; top: 20px;
-            width: 14px; height: 14px; border-radius: 50%;
-            background: #5dade2; border: 2px solid #fff;
+
+        .total-days {
+            background: var(--accent-green);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
         }
-        .timeline-step { font-weight: 600; color: #2d3748; }
-        .timeline-date { font-size: 0.95rem; color: #4a5568; }
-        .timeline-days { font-size: 0.85rem; background: #81c7d4; color: white; border-radius: 12px; padding: 2px 8px; display: inline-block; }
+
+        .total-days-number {
+            font-size: 3rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .total-days-number + div {
+            font-weight: 500;
+            font-size: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        
+        .save-btn, .reset-btn {
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            color: white;
+        }
+
+        .save-btn {
+            background: var(--accent-green);
+        }
+
+        .save-btn:hover {
+            background: #006642;
+        }
+
+        .reset-btn {
+            background: var(--accent-red);
+        }
+
+        .reset-btn:hover {
+            background: #c0392b;
+        }
+
+        .saved-results {
+            background: var(--container-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .saved-results h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--main-text);
+        }
+
+        .result-item {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-item strong {
+            color: var(--main-text);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header"><h1><i class="fas fa-truck"></i> Calculadora de Prazos</h1></div>
+        <div class="header">
+            <h1><i class="fas fa-truck"></i> Calculadora de Prazos</h1>
+        </div>
+        
         <div class="main-content">
             <div class="steps-container" id="steps-container"></div>
+            
             <div class="summary-panel">
-                <div class="total-days"><span id="total-days-number" class="total-days-number">0</span><div>Dias Totais</div></div>
-                <button onclick="resetAll()">Limpar Tudo</button>
+                <div class="hawb-input">
+                    <label>Número do HAWB</label>
+                    <input type="text" id="hawb-number" placeholder="Digite o número do HAWB">
+                </div>
+                <div class="total-days">
+                    <span id="total-days-number" class="total-days-number">0</span>
+                    <div>Dias Totais</div>
+                </div>
+                <div class="button-group">
+                    <button class="save-btn" onclick="saveResult()"><i class="fas fa-save"></i> Salvar</button>
+                    <button class="reset-btn" onclick="resetAll()"><i class="fas fa-redo"></i> Limpar Tudo</button>
+                </div>
             </div>
         </div>
-        <div class="timeline-container"><div class="timeline-title"><i class="fas fa-clock"></i> Timeline</div><div id="timeline" class="timeline"></div></div>
+
+        <div class="saved-results">
+            <h3>Resultados Salvos</h3>
+            <div id="results-list"></div>
+        </div>
     </div>
 
     <script>
@@ -115,23 +324,49 @@
         ];
         let stepData = {};
 
+        function formatDateToBR(dateStr) {
+            if (!dateStr) return '';
+            const [year, month, day] = dateStr.split('-');
+            return `${day}/${month}/${year}`;
+        }
+
         function createStepCards() {
             const container = document.getElementById("steps-container");
+            container.innerHTML = "";
             steps.forEach((step, idx) => {
                 const card = document.createElement("div");
                 card.className="step-card";
                 card.innerHTML=`
                     <button class="disable-btn" id="${step.id}-disable" onclick="toggleStep('${step.id}')"><i class="fas fa-power-off"></i></button>
-                    <div class="step-header"><div class="step-number">${idx+1}</div><div class="step-title">${step.name}</div></div>
-                    <div class="step-content">
-                        ${step.first ? `
-                        <div class="input-group"><label>Data Inicial</label><input type="date" id="${step.id}-date" onchange="calculateFromInitial('${step.id}')"></div>
-                        <div class="input-group"><label>Data Calculada</label><div id="${step.id}-calculated" class="calculated-date">Selecione</div></div>` :
-                        `<div class="input-group"><label>Período</label><select id="${step.id}-period" onchange="calculateStep('${step.id}')">${periodOptions()}</select></div>
-                        <div class="input-group"><label>Data Manual</label><input type="date" id="${step.id}-date" onchange="calculateFromManual('${step.id}')"></div>
-                        <div class="input-group"><label>Data Calculada</label><div id="${step.id}-calculated" class="calculated-date">-</div></div>
-                        <div class="input-group"><label>Dias</label><div id="${step.id}-days" class="calculated-date">0 dias</div></div>`}
-                    </div>`;
+                    <div><strong>${idx+1}. ${step.name}</strong></div>
+                    ${step.first ? `
+                        <div>
+                            <label>Data Inicial</label>
+                            <input type="date" id="${step.id}-date" onchange="calculateFromInitial('${step.id}')">
+                        </div>
+                        <div>
+                            <label>Data Calculada</label>
+                            <div id="${step.id}-calculated" class="calculated-date">-</div>
+                        </div>` :
+                        `<div>
+                            <div>
+                                <label>Período</label>
+                                <select id="${step.id}-period" onchange="calculateStep('${step.id}')">${periodOptions()}</select>
+                            </div>
+                            <div>
+                                <label>Data Manual (Opcional)</label>
+                                <input type="date" id="${step.id}-date" onchange="calculateFromManual('${step.id}')">
+                            </div>
+                            <div>
+                                <label>Data Calculada</label>
+                                <div id="${step.id}-calculated" class="calculated-date">-</div>
+                            </div>
+                            <div>
+                                <label>Dias</label>
+                                <div id="${step.id}-days" class="calculated-days">0 dias</div>
+                            </div>
+                        </div>`}
+                `;
                 container.appendChild(card);
             });
         }
@@ -140,63 +375,111 @@
             return `<option value="">Selecione</option>`+opts.map(d=>`<option value="${d}">${d} dias</option>`).join("");
         }
         function toggleStep(id) {
-            if (!stepData[id]) return;
-            stepData[id].disabled = !stepData[id].disabled;
-            document.getElementById(id+"-disable").classList.toggle("active", stepData[id].disabled);
-            updateSummary(); updateTimeline();
+            if (!stepData[id]) {
+                stepData[id] = { disabled: true, days: 0 };
+            } else {
+                stepData[id].disabled = !stepData[id].disabled;
+            }
+            document.getElementById(id + "-disable").classList.toggle("active", stepData[id].disabled);
+            updateSummary();
         }
         function calculateFromInitial(id) {
-            const val=document.getElementById(id+'-date').value;
-            if (!val) return;
-            stepData[id]={date:val,days:0,disabled:false};
-            document.getElementById(id+'-calculated').textContent=formatDateBR(val);
-            updateSummary(); updateTimeline();
+            const val = document.getElementById(id + '-date').value;
+            if (!val) {
+                stepData[id] = undefined;
+                document.getElementById(id + '-calculated').textContent = "-";
+                updateSummary();
+                return;
+            }
+            stepData[id] = { date: val, days: 0, disabled: false };
+            document.getElementById(id + '-calculated').textContent = formatDateToBR(val);
+            updateSummary();
         }
         function calculateStep(id) {
-            const val=parseInt(document.getElementById(id+'-period').value);
-            if (!val) return;
-            const prev=getPrev(id);
-            if (!prev||!stepData[prev]) return alert("Configure a etapa anterior");
-            const newDate=addDays(stepData[prev].date,val);
-            stepData[id]={date:newDate.toISOString().split('T')[0],days:val,disabled:false};
-            document.getElementById(id+'-calculated').textContent=formatDateBR(stepData[id].date);
-            document.getElementById(id+'-days').textContent=val+" dias";
-            updateSummary(); updateTimeline();
+            const val = parseInt(document.getElementById(id + '-period').value);
+            if (!val) {
+                stepData[id] = undefined;
+                document.getElementById(id + '-calculated').textContent = "-";
+                document.getElementById(id + '-days').textContent = "0 dias";
+                updateSummary();
+                return;
+            }
+            const prev = getPrev(id);
+            if (!prev || !stepData[prev]) {
+                alert("Configure a etapa anterior primeiro.");
+                document.getElementById(id + '-period').value = "";
+                return;
+            }
+            const newDate = addDays(stepData[prev].date, val);
+            stepData[id] = { date: newDate.toISOString().split('T')[0], days: val, disabled: false };
+            document.getElementById(id + '-date').value = ""; 
+            document.getElementById(id + '-calculated').textContent = formatDateToBR(stepData[id].date);
+            document.getElementById(id + '-days').textContent = val + " dias";
+            updateSummary();
         }
         function calculateFromManual(id) {
-            const val=document.getElementById(id+'-date').value;
-            if (!val) return;
-            const prev=getPrev(id);
-            if (!prev||!stepData[prev]) return alert("Configure a etapa anterior");
-            const diff=calculateDaysBetween(stepData[prev].date,val);
-            stepData[id]={date:val,days:diff,disabled:false};
-            document.getElementById(id+'-calculated').textContent=formatDateBR(val);
-            document.getElementById(id+'-days').textContent=diff+" dias";
-            updateSummary(); updateTimeline();
+            const val = document.getElementById(id + '-date').value;
+            if (!val) {
+                stepData[id] = undefined;
+                document.getElementById(id + '-calculated').textContent = "-";
+                document.getElementById(id + '-days').textContent = "0 dias";
+                updateSummary();
+                return;
+            }
+            const prev = getPrev(id);
+            if (!prev || !stepData[prev]) {
+                alert("Configure a etapa anterior primeiro.");
+                document.getElementById(id + '-date').value = "";
+                return;
+            }
+            const diff = calculateDaysBetween(stepData[prev].date, val);
+            stepData[id] = { date: val, days: diff, disabled: false };
+            document.getElementById(id + '-period').value = "";
+            document.getElementById(id + '-calculated').textContent = formatDateToBR(val);
+            document.getElementById(id + '-days').textContent = diff + " dias";
+            updateSummary();
         }
         function getPrev(id){ const idx=steps.findIndex(s=>s.id===id); return idx>0?steps[idx-1].id:null; }
-        function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d;}
-        function calculateDaysBetween(start,end){return Math.ceil((new Date(end)-new Date(start))/(1000*60*60*24));}
-        function formatDateBR(d){return new Date(d).toLocaleDateString('pt-BR');}
-        function updateSummary(){
-            let total=0; steps.forEach(s=>{ if(stepData[s.id]&&!stepData[s.id].disabled){total+=stepData[s.id].days;} });
-            document.getElementById("total-days-number").textContent=total;
+        function addDays(date,days){const d=new Date(date + 'T00:00:00');d.setDate(d.getDate()+days);return d;}
+        function calculateDaysBetween(start,end){
+            const startDate = new Date(start + 'T00:00:00');
+            const endDate = new Date(end + 'T00:00:00');
+            return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
         }
-        function updateTimeline(){
-            const t=document.getElementById("timeline"); t.innerHTML="";
-            steps.forEach(s=>{
-                if(stepData[s.id]){
-                    const item=document.createElement("div");
-                    item.className="timeline-item";
-                    item.innerHTML=`<div class="timeline-step">${s.name}</div>
-                    <div class="timeline-date">${formatDateBR(stepData[s.id].date)}</div>
-                    <div class="timeline-days">${stepData[s.id].disabled?"(ignorado)":stepData[s.id].days+" dias"}</div>`;
-                    t.appendChild(item);
+        function updateSummary(){
+            let total = 0;
+            steps.forEach(s => {
+                if(stepData[s.id] && !stepData[s.id].disabled) {
+                    total += stepData[s.id].days;
                 }
             });
+            document.getElementById("total-days-number").textContent = total;
         }
-        function resetAll(){ stepData={}; document.getElementById("steps-container").innerHTML=""; createStepCards(); updateSummary(); updateTimeline(); }
-        document.addEventListener("DOMContentLoaded",()=>{createStepCards();updateTimeline();});
+        function resetAll(){
+            stepData = {};
+            createStepCards();
+            updateSummary();
+            document.getElementById("hawb-number").value = "";
+        }
+        function saveResult(){
+            const hawb = document.getElementById("hawb-number").value.trim();
+            if(!hawb){
+                alert("Digite o número do HAWB para salvar.");
+                return;
+            }
+            const total = document.getElementById("total-days-number").textContent;
+            const list = document.getElementById("results-list");
+            const item = document.createElement("div");
+            item.className = "result-item";
+            item.innerHTML = `
+                <span>HAWB: <strong>${hawb}</strong></span>
+                <span>Dias Totais: <strong>${total}</strong></span>
+            `;
+            list.appendChild(item);
+            document.getElementById("hawb-number").value = "";
+            resetAll();
+        }
+        document.addEventListener("DOMContentLoaded", () => { createStepCards(); });
     </script>
 </body>
 </html>
