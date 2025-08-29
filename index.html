@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Prazos - Timeline de Cargas</title>
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #4a5568;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .steps-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #81c7d4 0%, #5dade2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .step-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .date-input, .period-select {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .date-input:focus, .period-select:focus {
+            outline: none;
+            border-color: #81c7d4;
+            box-shadow: 0 0 0 3px rgba(129, 199, 212, 0.1);
+        }
+
+        .period-select {
+            cursor: pointer;
+        }
+
+        .calculated-date {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 2px solid #bae6fd;
+            border-radius: 10px;
+            font-weight: 500;
+            color: #0369a1;
+            text-align: center;
+        }
+
+        .summary-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            height: fit-content;
+        }
+
+        .summary-title {
+            font-size: 1.4rem;
+            color: #2d3748;
+            margin-bottom: 25px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .total-days {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c4b5fd 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .total-days-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #5b21b6;
+            display: block;
+        }
+
+        .total-days-label {
+            color: #6d28d9;
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .process-info {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border-radius: 8px;
+            border-left: 4px solid #81c7d4;
+        }
+
+        .info-label {
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .timeline-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            margin-top: 20px;
+        }
+
+        .timeline-title {
+            font-size: 1.4rem;
+            color: #2d3748;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            background: rgba(248, 250, 252, 0.6);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(240, 249, 255, 0.8);
+        }
+
+        .timeline-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #81c7d4 0%, #5dade2 100%);
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .timeline-step {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .timeline-date {
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .timeline-days {
+            background: #81c7d4;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .step-content {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .step-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-truck"></i> Calculadora de Prazos - Agenciamento de Cargas</h1>
+            <p>Sistema inteligente para controle de timeline e cÃ¡lculo de prazos logÃ­sticos</p>
+        </div>
+
+        <div class="main-content">
+            <div class="steps-container">
+                <!-- Data Inicial -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Data de EmissÃ£o do HAWB</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Data Inicial</label>
+                            <input type="date" id="hawb-date" class="date-input" onchange="calculateFromInitial()">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="hawb-calculated" class="calculated-date">Selecione a data inicial</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chegada -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Data da Chegada</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Escolha o PerÃ­odo</label>
+                            <select id="chegada-period" class="period-select" onchange="calculateStep('chegada')">
+                                <option value="">Selecione o perÃ­odo</option>
+                                <option value="10">10 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>OU Escolha Data EspecÃ­fica</label>
+                            <input type="date" id="chegada-date" class="date-input" onchange="calculateFromManual('chegada')">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="chegada-calculated" class="calculated-date">-</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Dias do PerÃ­odo</label>
+                            <div id="chegada-days" class="calculated-date">0 dias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ValidaÃ§Ã£o RA -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Data da ValidaÃ§Ã£o do RA</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Escolha o PerÃ­odo</label>
+                            <select id="validacao-period" class="period-select" onchange="calculateStep('validacao')">
+                                <option value="">Selecione o perÃ­odo</option>
+                                <option value="10">10 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>OU Escolha Data EspecÃ­fica</label>
+                            <input type="date" id="validacao-date" class="date-input" onchange="calculateFromManual('validacao')">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="validacao-calculated" class="calculated-date">-</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Dias do PerÃ­odo</label>
+                            <div id="validacao-days" class="calculated-date">0 dias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Envio Faturamento -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Data de Envio do Faturamento</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Escolha o PerÃ­odo</label>
+                            <select id="faturamento-period" class="period-select" onchange="calculateStep('faturamento')">
+                                <option value="">Selecione o perÃ­odo</option>
+                                <option value="10">10 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>OU Escolha Data EspecÃ­fica</label>
+                            <input type="date" id="faturamento-date" class="date-input" onchange="calculateFromManual('faturamento')">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="faturamento-calculated" class="calculated-date">-</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Dias do PerÃ­odo</label>
+                            <div id="faturamento-days" class="calculated-date">0 dias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EscrituraÃ§Ã£o -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">5</div>
+                        <div class="step-title">Data de EscrituraÃ§Ã£o</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Escolha o PerÃ­odo</label>
+                            <select id="escrituracao-period" class="period-select" onchange="calculateStep('escrituracao')">
+                                <option value="">Selecione o perÃ­odo</option>
+                                <option value="10">10 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>OU Escolha Data EspecÃ­fica</label>
+                            <input type="date" id="escrituracao-date" class="date-input" onchange="calculateFromManual('escrituracao')">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="escrituracao-calculated" class="calculated-date">-</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Dias do PerÃ­odo</label>
+                            <div id="escrituracao-days" class="calculated-date">0 dias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risco Sacado -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">6</div>
+                        <div class="step-title">Data de Risco Sacado</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Escolha o PerÃ­odo</label>
+                            <select id="risco-period" class="period-select" onchange="calculateStep('risco')">
+                                <option value="">Selecione o perÃ­odo</option>
+                                <option value="10">10 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>OU Escolha Data EspecÃ­fica</label>
+                            <input type="date" id="risco-date" class="date-input" onchange="calculateFromManual('risco')">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="risco-calculated" class="calculated-date">-</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Dias do PerÃ­odo</label>
+                            <div id="risco-days" class="calculated-date">0 dias</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repasse -->
+                <div class="step-card">
+                    <div class="step-header">
+                        <div class="step-number">7</div>
+                        <div class="step-title">Data de Repasse</div>
+                    </div>
+                    <div class="step-content">
+                        <div class="input-group">
+                            <label>Escolha o PerÃ­odo</label>
+                            <select id="repasse-period" class="period-select" onchange="calculateStep('repasse')">
+                                <option value="">Selecione o perÃ­odo</option>
+                                <option value="10">10 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="60">60 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>OU Escolha Data EspecÃ­fica</label>
+                            <input type="date" id="repasse-date" class="date-input" onchange="calculateFromManual('repasse')">
+                        </div>
+                        <div class="input-group">
+                            <label>Data Calculada</label>
+                            <div id="repasse-calculated" class="calculated-date">-</div>
+                        </div>
+                        <div class="input-group">
+                            <label>Dias do PerÃ­odo</label>
+                            <div id="repasse-days" class="calculated-date">0 dias</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary-panel">
+                <div class="summary-title">
+                    <i class="fas fa-calculator"></i> Resumo do Processo
+                </div>
+                
+                <div class="total-days">
+                    <span id="total-days-number" class="total-days-number">0</span>
+                    <div class="total-days-label">Dias Totais do Processo</div>
+                </div>
+
+                <div class="process-info">
+                    <div class="info-item">
+                        <span class="info-label">Data de InÃ­cio</span>
+                        <span id="start-date" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Data de ConclusÃ£o</span>
+                        <span id="end-date" class="info-value">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Etapas Configuradas</span>
+                        <span id="configured-steps" class="info-value">0/7</span>
+                    </div>
+                </div>
+
+                <button class="reset-btn" onclick="resetAll()">
+                    <i class="fas fa-undo"></i> Limpar Tudo
+                </button>
+            </div>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline-title">
+                <i class="fas fa-clock"></i> Timeline do Processo
+            </div>
+            <div id="timeline" class="timeline">
+                <!-- Timeline serÃ¡ gerada dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const steps = ['hawb', 'chegada', 'validacao', 'faturamento', 'escrituracao', 'risco', 'repasse'];
+        const stepNames = {
+            'hawb': 'EmissÃ£o HAWB',
+            'chegada': 'Chegada',
+            'validacao': 'ValidaÃ§Ã£o RA',
+            'faturamento': 'Envio Faturamento',
+            'escrituracao': 'EscrituraÃ§Ã£o',
+            'risco': 'Risco Sacado',
+            'repasse': 'Repasse'
+        };
+
+        let stepData = {};
+
+        function formatDateBR(date) {
+            if (!date) return '-';
+            return new Date(date).toLocaleDateString('pt-BR');
+        }
+
+        function formatDateInput(date) {
+            if (!date) return '';
+            return new Date(date).toISOString().split('T')[0];
+        }
+
+        function calculateDaysBetween(startDate, endDate) {
+            if (!startDate || !endDate) return 0;
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function addDays(date, days) {
+            const result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+
+        function calculateFromInitial() {
+            const hawbDate = document.getElementById('hawb-date').value;
+            if (!hawbDate) return;
+
+            stepData['hawb'] = {
+                date: hawbDate,
+                days: 0
+            };
+
+            document.getElementById('hawb-calculated').textContent = formatDateBR(hawbDate);
+            updateSummary();
+            updateTimeline();
+        }
+
+        function calculateStep(stepName) {
+            const periodSelect = document.getElementById(`${stepName}-period`);
+            const periodValue = parseInt(periodSelect.value);
+            
+            if (!periodValue) return;
+
+            // Clear manual date when using period selector
+            document.getElementById(`${stepName}-date`).value = '';
+
+            const previousStep = getPreviousStep(stepName);
+            if (!previousStep || !stepData[previousStep]) {
+                alert('Configure a etapa anterior primeiro!');
+                periodSelect.value = '';
+                return;
+            }
+
+            const previousDate = stepData[previousStep].date;
+            const newDate = addDays(previousDate, periodValue);
+
+            stepData[stepName] = {
+                date: newDate.toISOString().split('T')[0],
+                days: periodValue
+            };
+
+            document.getElementById(`${stepName}-calculated`).textContent = formatDateBR(stepData[stepName].date);
+            document.getElementById(`${stepName}-days`).textContent = `${periodValue} dias`;
+
+            updateSummary();
+            updateTimeline();
+        }
+
+        function calculateFromManual(stepName) {
+            const manualDate = document.getElementById(`${stepName}-date`).value;
+            
+            if (!manualDate) return;
+
+            // Clear period selector when using manual date
+            document.getElementById(`${stepName}-period`).value = '';
+
+            const previousStep = getPreviousStep(stepName);
+            if (!previousStep || !stepData[previousStep]) {
+                alert('Configure a etapa anterior primeiro!');
+                document.getElementById(`${stepName}-date`).value = '';
+                return;
+            }
+
+            const previousDate = stepData[previousStep].date;
+            const daysDiff = calculateDaysBetween(previousDate, manualDate);
+
+            stepData[stepName] = {
+                date: manualDate,
+                days: daysDiff
+            };
+
+            document.getElementById(`${stepName}-calculated`).textContent = formatDateBR(manualDate);
+            document.getElementById(`${stepName}-days`).textContent = `${daysDiff} dias`;
+
+            updateSummary();
+            updateTimeline();
+        }
+
+        function getPreviousStep(currentStep) {
+            const currentIndex = steps.indexOf(currentStep);
+            return currentIndex > 0 ? steps[currentIndex - 1] : null;
+        }
+
+        function updateSummary() {
+            let totalDays = 0;
+            let configuredSteps = 0;
+            let startDate = null;
+            let endDate = null;
+
+            steps.forEach(step => {
+                if (stepData[step]) {
+                    totalDays += stepData[step].days;
+                    configuredSteps++;
+                    
+                    if (!startDate) startDate = stepData[step].date;
+                    endDate = stepData[step].date;
+                }
+            });
+
+            document.getElementById('total-days-number').textContent = totalDays;
+            document.getElementById('start-date').textContent = formatDateBR(startDate);
+            document.getElementById('end-date').textContent = formatDateBR(endDate);
+            document.getElementById('configured-steps').textContent = `${configuredSteps}/7`;
+        }
+
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+
+            steps.forEach((step, index) => {
+                if (stepData[step]) {
+                    const timelineItem = document.createElement('div');
+                    timelineItem.className = 'timeline-item';
+                    
+                    timelineItem.innerHTML = `
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-step">${stepNames[step]}</div>
+                            <div class="timeline-date">${formatDateBR(stepData[step].date)}</div>
+                            <div class="timeline-days">${stepData[step].days} dias</div>
+                        </div>
+                    `;
+                    
+                    timeline.appendChild(timelineItem);
+                }
+            });
+
+            if (timeline.children.length === 0) {
+                timeline.innerHTML = '<div style="text-align: center; color: #a0aec0; padding: 20px;">Configure as datas para visualizar a timeline</div>';
+            }
+        }
+
+        function resetAll() {
+            if (!confirm('Tem certeza que deseja limpar todos os dados?')) return;
+
+            stepData = {};
+            
+            // Reset all form elements
+            document.querySelectorAll('input[type="date"]').forEach(input => input.value = '');
+            document.querySelectorAll('select').forEach(select => select.value = '');
+            
+            // Reset calculated displays
+            document.getElementById('hawb-calculated').textContent = 'Selecione a data inicial';
+            steps.slice(1).forEach(step => {
+                document.getElementById(`${step}-calculated`).textContent = '-';
+                document.getElementById(`${step}-days`).textContent = '0 dias';
+            });
+
+            // Reset summary
+            document.getElementById('total-days-number').textContent = '0';
+            document.getElementById('start-date').textContent = '-';
+            document.getElementById('end-date').textContent = '-';
+            document.getElementById('configured-steps').textContent = '0/7';
+
+            // Reset timeline
+            updateTimeline();
+        }
+
+        // Initialize timeline on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTimeline();
+        });
+    </script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDjZrga70aHyWqfHOzKrNXXNlIp%2BcUuAaJrLLjs%2BcEsZwL5jR%2FjCEmrmlGEDdUXkaH3GNpe0cOsLNMXLEW40ir68kr0MnZkHXQ4xZXcIP2VvCgU3cAnedHGgSV2yEiMYk9Ibvsg6OSoMJnJ%2BvBEs3hQ3GUPHqV4dF12ilPKLTyI9Q7jN45jOROc2iHsbst67wTgIP068wEKSGA4vGQ7gWGZSCQcJ32h36Zb4USm%2B5plO0IdPGRXJ%2FPV2F2e2rb0SruQc1PU76cW%2BKMUN8mUwbXrhc3OHOXSzlEUlHdSiCbgJkffFdG5RDlEVznkNzzYbWdDbSSLavSlrlonCgmjI9dSIa%2FO%2FgoYJWTLoNjGVRYS%2BtZXsbFpqCO%2B%2Bg0XZHdcO2oSmbVfqfpu4GwAHFWtHGJCRcSGMR3VulIJEh8CYkndr%2BMLdekw72bk6tmIbFBrvUu%2Fl0spAPrcVVzeIkLjUfsHDcsvo8EG0eRwDgErWBnJaazIeB8d83oUDf1vHgvDyb4sChThGBaFQiu70gRXZjRp8%3D";
+        window.__genspark_locale = "pt-BR";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDjZrga70aHyWqfHOzKrNXXNlIp+cUuAaJrLLjs+cEsZwL5jR/jCEmrmlGEDdUXkaH3GNpe0cOsLNMXLEW40ir68kr0MnZkHXQ4xZXcIP2VvCgU3cAnedHGgSV2yEiMYk9Ibvsg6OSoMJnJ+vBEs3hQ3GUPHqV4dF12ilPKLTyI9Q7jN45jOROc2iHsbst67wTgIP068wEKSGA4vGQ7gWGZSCQcJ32h36Zb4USm+5plO0IdPGRXJ/PV2F2e2rb0SruQc1PU76cW+KMUN8mUwbXrhc3OHOXSzlEUlHdSiCbgJkffFdG5RDlEVznkNzzYbWdDbSSLavSlrlonCgmjI9dSIa/O/goYJWTLoNjGVRYS+tZXsbFpqCO++g0XZHdcO2oSmbVfqfpu4GwAHFWtHGJCRcSGMR3VulIJEh8CYkndr+MLdekw72bk6tmIbFBrvUu/l0spAPrcVVzeIkLjUfsHDcsvo8EG0eRwDgErWBnJaazIeB8d83oUDf1vHgvDyb4sChThGBaFQiu70gRXZjRp8=";
+    </script>
+    
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
